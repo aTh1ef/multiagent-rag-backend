@@ -53,13 +53,19 @@ export async function listMessages(userId: string, sessionId: string) {
   });
 }
 
+// Bounds how much conversation gets pulled into the LLM prompt for very long-running sessions.
+// 200 messages (100 turns) is generous for a personal-scale app while keeping prompt size and
+// DB read cost predictable regardless of how old or long a session gets.
+const MAX_HISTORY_MESSAGES = 200;
+
 export async function loadHistory(sessionId: string): Promise<ConversationTurn[]> {
   const messages = await prisma.message.findMany({
     where: { sessionId },
-    orderBy: { sequence: "asc" },
+    orderBy: { sequence: "desc" },
+    take: MAX_HISTORY_MESSAGES,
   });
 
-  return messages.map((m) => ({
+  return messages.reverse().map((m) => ({
     role: m.role === "USER" ? "user" : "assistant",
     content: m.content,
     createdAt: m.createdAt.toISOString(),

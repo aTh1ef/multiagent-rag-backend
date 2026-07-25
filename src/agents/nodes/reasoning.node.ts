@@ -3,7 +3,7 @@ import { buildReasoningMessages } from "../prompts/reasoning.prompt";
 import type { AllowedGeminiModel } from "../../config/env";
 import type { ChatGraphState, ChatGraphUpdate, Citation } from "../state";
 
-function extractCitations(text: string, chunks: ChatGraphState["retrievedChunks"]): Citation[] {
+export function extractCitations(text: string, chunks: ChatGraphState["retrievedChunks"]): Citation[] {
   const citedNumbers = new Set<number>();
   const regex = /\[(\d+)\]/g;
   let match: RegExpExecArray | null;

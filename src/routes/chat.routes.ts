@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as chatController from "../controllers/chat.controller";
 import { requireAuth } from "../middleware/auth";
+import { chatRateLimit } from "../middleware/rateLimit";
 
 const router = Router();
 
@@ -12,6 +13,6 @@ router.get("/sessions/:id", chatController.getSession);
 router.patch("/sessions/:id", chatController.updateSession);
 router.delete("/sessions/:id", chatController.deleteSession);
 router.get("/sessions/:id/messages", chatController.listMessages);
-router.post("/sessions/:id/messages", chatController.sendMessage);
+router.post("/sessions/:id/messages", chatRateLimit, chatController.sendMessage);
 
 export default router;

@@ -24,6 +24,10 @@ if (!parsed.success) {
 
 export const env = parsed.data;
 
+// Supports a comma-separated list so both a production domain and a Vercel preview URL
+// (or www/non-www variants) can be allowed without opening CORS up to "*".
+export const ALLOWED_ORIGINS = env.FRONTEND_ORIGIN.split(",").map((origin) => origin.trim());
+
 // gemini-2.5-pro and gemini-2.5-flash-lite return permanent (limit: 0) free-tier quota errors on
 // this Google account/project, confirmed via direct API testing across two separate API keys in
 // the same project. Substituted with confirmed-working models spanning the same lite/standard/

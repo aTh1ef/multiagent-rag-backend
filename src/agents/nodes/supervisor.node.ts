@@ -5,16 +5,19 @@ import type { ChatGraphState, ChatGraphUpdate, RouteDecision } from "../state";
 const SUPERVISOR_MODEL = "gemini-3.5-flash-lite" as const;
 const HISTORY_WINDOW = 6;
 
+export function parseRouteDecision(rawResponse: string): RouteDecision {
+  const raw = rawResponse.trim().toLowerCase();
+  if (raw.includes("rag")) return "rag";
+  if (raw.includes("history")) return "history_only";
+  return "general";
+}
+
 export async function supervisorNode(state: ChatGraphState): Promise<ChatGraphUpdate> {
   const model = getChatModel(SUPERVISOR_MODEL, 0);
   const prompt = buildSupervisorPrompt(state.userMessage, state.conversationHistory.slice(-HISTORY_WINDOW));
 
   const response = await model.invoke(prompt);
-  const raw = (typeof response.content === "string" ? response.content : "").trim().toLowerCase();
-
-  let route: RouteDecision = "general";
-  if (raw.includes("rag")) route = "rag";
-  else if (raw.includes("history")) route = "history_only";
+  const route = parseRouteDecision(typeof response.content === "string" ? response.content : "");
 
   return { route };
 }
