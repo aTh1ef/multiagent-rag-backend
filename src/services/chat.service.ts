@@ -1,7 +1,7 @@
 import { prisma } from "../lib/prisma";
 import { HttpError } from "../middleware/errorHandler";
 import { ALLOWED_GEMINI_MODELS, AllowedGeminiModel, DEFAULT_GEMINI_MODEL } from "../config/env";
-import type { ConversationTurn, Citation } from "../agents/state";
+import type { ConversationTurn, Citation, RouteDecision } from "../agents/state";
 
 export function isAllowedModel(model: unknown): model is AllowedGeminiModel {
   return typeof model === "string" && (ALLOWED_GEMINI_MODELS as readonly string[]).includes(model);
@@ -70,7 +70,8 @@ export async function saveTurn(
   sessionId: string,
   userContent: string,
   assistantContent: string,
-  citations: Citation[]
+  citations: Citation[],
+  route: RouteDecision
 ) {
   const last = await prisma.message.findFirst({
     where: { sessionId },
@@ -90,6 +91,7 @@ export async function saveTurn(
         role: "ASSISTANT",
         content: assistantContent,
         citations: citations.length > 0 ? (citations as unknown as object) : undefined,
+        route,
         sequence: nextSequence + 1,
       },
     }),

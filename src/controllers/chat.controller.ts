@@ -73,7 +73,8 @@ export async function sendMessage(req: Request, res: Response) {
     sessionId,
     body.content,
     result.finalAnswer,
-    result.citations
+    result.citations,
+    result.route ?? "general"
   );
 
   res.status(200).json({ userMessage, assistantMessage });

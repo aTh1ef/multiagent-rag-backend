@@ -52,6 +52,7 @@ model Message {
   role      Role
   content   String      @db.Text
   citations Json?
+  route     String? // 'rag' | 'general' | 'history_only' — which agent path produced this assistant message
   sequence  Int
   createdAt DateTime    @default(now())
 
