@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ASSISTANT
+}
+
+enum DocumentStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  documents    Document[]
+  chatSessions ChatSession[]
+}
+
+model ChatSession {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String    @default("New Chat")
+  model     String    @default("gemini-2.5-flash")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+
+  @@index([userId])
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      Role
+  content   String      @db.Text
+  citations Json?
+  sequence  Int
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId, sequence])
+}
+
+model Document {
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  originalName  String
+  mimeType      String
+  fileSizeBytes Int
+  status        DocumentStatus  @default(PROCESSING)
+  pageCount     Int?
+  chunkCount    Int?
+  errorMessage  String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  chunks        DocumentChunk[]
+
+  @@index([userId, status])
+}
+
+model DocumentChunk {
+  id               String   @id @default(cuid())
+  documentId       String
+  document         Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId           String
+  pineconeVectorId String   @unique
+  chunkIndex       Int
+  pageNumber       Int?
+  content          String   @db.Text
+  createdAt        DateTime @default(now())
+
+  @@index([documentId])
+  @@index([userId])
+}
