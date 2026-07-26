@@ -1,6 +1,7 @@
 import mammoth from "mammoth";
 import { HumanMessage } from "@langchain/core/messages";
 import { getChatModel } from "../lib/gemini";
+import { DEFAULT_GEMINI_MODEL } from "../config/env";
 import { HttpError } from "../middleware/errorHandler";
 
 export interface ExtractedPage {
@@ -21,7 +22,7 @@ const PDF_EXTRACTION_PROMPT =
   "Do not summarize, comment, or add any text that isn't present in the document.";
 
 async function extractPdfText(buffer: Buffer): Promise<ExtractedPage[]> {
-  const model = getChatModel("gemini-2.5-flash", 0);
+  const model = getChatModel(DEFAULT_GEMINI_MODEL, 0);
   const message = new HumanMessage({
     content: [
       { type: "application/pdf", data: buffer.toString("base64") },

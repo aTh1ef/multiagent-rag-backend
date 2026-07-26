@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as chatService from "../services/chat.service";
 import { runChatGraph } from "../agents/graph";
 import { HttpError } from "../middleware/errorHandler";
+import { DEFAULT_GEMINI_MODEL } from "../config/env";
 
 const createSessionSchema = z.object({
   title: z.string().min(1).optional(),
@@ -57,11 +58,15 @@ export async function sendMessage(req: Request, res: Response) {
   const session = await chatService.getOwnedSession(userId, sessionId);
   const conversationHistory = await chatService.loadHistory(sessionId);
 
+  // Guards against sessions created before a model was removed from the allowlist (e.g. a
+  // Gemini model that stopped being available on this API key/project after the session existed).
+  const model = chatService.isAllowedModel(session.model) ? session.model : DEFAULT_GEMINI_MODEL;
+
   const result = await runChatGraph({
     userId,
     sessionId,
     userMessage: body.content,
-    model: session.model,
+    model,
     conversationHistory,
   });
 

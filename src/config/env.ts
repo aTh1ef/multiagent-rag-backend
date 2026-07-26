@@ -28,12 +28,13 @@ export const env = parsed.data;
 // (or www/non-www variants) can be allowed without opening CORS up to "*".
 export const ALLOWED_ORIGINS = env.FRONTEND_ORIGIN.split(",").map((origin) => origin.trim());
 
-// gemini-2.5-pro and gemini-2.5-flash-lite return permanent (limit: 0) free-tier quota errors on
-// this Google account/project, confirmed via direct API testing across two separate API keys in
-// the same project. Substituted with confirmed-working models spanning the same lite/standard/
-// strong tiers.
-export const ALLOWED_GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-2.5-flash", "gemini-3.5-flash"] as const;
+// Gemini free-tier model availability has proven inconsistent across API keys/projects:
+// gemini-2.5-pro and gemini-2.5-flash-lite returned permanent (limit: 0) errors on one key,
+// and gemini-2.5-flash itself ("no longer available to new users") was blocked on another.
+// The gemini-3.x family has been the one consistently working tier across every key tested,
+// so the picker standardizes on that instead of mixing generations.
+export const ALLOWED_GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash"] as const;
 
 export type AllowedGeminiModel = (typeof ALLOWED_GEMINI_MODELS)[number];
 
-export const DEFAULT_GEMINI_MODEL: AllowedGeminiModel = "gemini-2.5-flash";
+export const DEFAULT_GEMINI_MODEL: AllowedGeminiModel = "gemini-3.5-flash";
